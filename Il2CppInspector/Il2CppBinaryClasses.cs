@@ -1,6 +1,6 @@
 ﻿/*
     Copyright 2017 Perfare - https://github.com/Perfare/Il2CppDumper
-    Copyright 2017 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2017-2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
 
     All rights reserved.
 */
@@ -9,77 +9,111 @@ using NoisyCowStudios.Bin2Object;
 
 namespace Il2CppInspector
 {
+    // From class-internals.h / il2cpp-class-internals.h
     public class Il2CppCodeRegistration
     {
-        public uint methodPointersCount;
-        public uint pmethodPointers;
-        public uint delegateWrappersFromNativeToManagedCount; // (was renamed to reversePInvokeWrapperCount in v22)
-        public uint delegateWrappersFromNativeToManaged; // (was renamed to reversePInvokeWrappers in v22)
+        // Moved to Il2CppCodeGenModule in v24.2
+        [Version(Max = 24.1)]
+        public ulong methodPointersCount;
+        [Version(Max = 24.1)]
+        public ulong pmethodPointers;
+
+        public ulong reversePInvokeWrapperCount; // (was renamed from delegateWrappersFromNativeToManagedCount in v22)
+        public ulong reversePInvokeWrappers; // (was renamed from delegateWrappersFromNativeToManaged in v22)
 
         // Removed in metadata v23
         [Version(Max = 22)]
-        public uint delegateWrappersFromManagedToNativeCount;
+        public ulong delegateWrappersFromManagedToNativeCount;
         [Version(Max = 22)]
-        public uint delegateWrappersFromManagedToNative;
+        public ulong delegateWrappersFromManagedToNative;
         [Version(Max = 22)]
-        public uint marshalingFunctionsCount;
+        public ulong marshalingFunctionsCount;
         [Version(Max = 22)]
-        public uint marshalingFunctions;
-        [Version(Max = 22)]
-        public uint ccwMarshalingFunctionsCount;
-        [Version(Max = 22)]
-        public uint ccwMarshalingFunctions;
+        public ulong marshalingFunctions;
+        [Version(Min = 21, Max = 22)]
+        public ulong ccwMarshalingFunctionsCount;
+        [Version(Min = 21, Max = 22)]
+        public ulong ccwMarshalingFunctions;
 
-        public uint genericMethodPointersCount;
-        public uint genericMethodPointers;
-        public uint invokerPointersCount;
-        public uint invokerPointers;
-        public int customAttributeCount;
-        public uint customAttributeGenerators;
+        public ulong genericMethodPointersCount;
+        public ulong genericMethodPointers;
+        public ulong invokerPointersCount;
+        public ulong invokerPointers;
+        public long customAttributeCount;
+        public ulong customAttributeGenerators;
 
         // Removed in metadata v23
-        [Version(Max = 22)]
-        public int guidCount;
-        [Version(Max = 22)]
-        public uint guids; // Il2CppGuid
+        [Version(Min = 21, Max = 22)]
+        public long guidCount;
+        [Version(Min = 21, Max = 22)]
+        public ulong guids; // Il2CppGuid
 
         // Added in metadata v22
         [Version(Min = 22)]
-        public uint unresolvedVirtualCallCount;
+        public ulong unresolvedVirtualCallCount;
         [Version(Min = 22)]
-        public uint unresolvedVirtualCallPointers;
+        public ulong unresolvedVirtualCallPointers;
 
         // Added in metadata v23
         [Version(Min = 23)]
-        public uint interopDataCount;
+        public ulong interopDataCount;
         [Version(Min = 23)]
-        public uint interopData;
+        public ulong interopData;
+
+        // Added in metadata v24.2 to replace methodPointers and methodPointersCount
+        [Version(Min = 24.2)]
+        public ulong codeGenModulesCount;
+        [Version(Min = 24.2)]
+        public ulong pcodeGenModules;
+    }
+
+    // Introduced in metadata v24.2 (replaces method pointers in Il2CppCodeRegistration)
+    public class Il2CppCodeGenModule
+    {
+        public ulong moduleName;
+        public ulong methodPointerCount;
+        public ulong methodPointers;
+        public ulong invokerIndices;
+        public ulong reversePInvokeWrapperCount;
+        public ulong reversePInvokeWrapperIndices;
+        public ulong rgctxRangesCount;
+        public ulong rgctxRanges;
+        public ulong rgctxsCount;
+        public ulong rgctxs;
+        public ulong debuggerMetadata;
     }
 
 #pragma warning disable CS0649
     public class Il2CppMetadataRegistration
     {
-        public int genericClassesCount;
-        public uint genericClasses;
-        public int genericInstsCount;
-        public uint genericInsts;
-        public int genericMethodTableCount;
-        public uint genericMethodTable; // Il2CppGenericMethodFunctionsDefinitions
-        public int typesCount;
-        public uint ptypes;
-        public int methodSpecsCount;
-        public uint methodSpecs;
+        public long genericClassesCount;
+        public ulong genericClasses;
+        public long genericInstsCount;
+        public ulong genericInsts;
+        public long genericMethodTableCount;
+        public ulong genericMethodTable; // Il2CppGenericMethodFunctionsDefinitions
+        public long typesCount;
+        public ulong ptypes;
+        public long methodSpecsCount;
+        public ulong methodSpecs;
+        [Version(Max = 16)]
+        public long methodReferencesCount;
+        [Version(Max = 16)]
+        public ulong methodReferences;
 
-        public int fieldOffsetsCount;
-        public uint pfieldOffsets;
+        public long fieldOffsetsCount;
+        public ulong pfieldOffsets; // Changed from int32_t* to int32_t** after 5.4.0f3, before 5.5.0f3
 
-        public int typeDefinitionsSizesCount;
-        public uint typeDefinitionsSizes;
-        public uint metadataUsagesCount;
-        public uint metadataUsages;
+        public long typeDefinitionsSizesCount;
+        public ulong typeDefinitionsSizes;
+        [Version(Min = 19)]
+        public ulong metadataUsagesCount;
+        [Version(Min = 19)]
+        public ulong metadataUsages;
     }
 #pragma warning restore CS0649
 
+    // From blob.h / il2cpp-blob.h
     public enum Il2CppTypeEnum
     {
         IL2CPP_TYPE_END = 0x00,       /* End of List */
@@ -122,46 +156,64 @@ namespace Il2CppInspector
         IL2CPP_TYPE_ENUM = 0x55        /* an enumeration */
     }
 
+    // From metadata.h / il2cpp-runtime-metadata.h
     public class Il2CppType
     {
-        public uint datapoint;
-        public uint bits;
+        /*
+        union
+        {
+            TypeDefinitionIndex klassIndex; // for VALUETYPE and CLASS 
+            const Il2CppType* type; // for PTR and SZARRAY 
+            Il2CppArrayType* array; // for ARRAY 
+            GenericParameterIndex genericParameterIndex; // for VAR and MVAR 
+            Il2CppGenericClass* generic_class; // for GENERICINST
+        }
+        */
+        public ulong datapoint;
+        public ulong bits; // this should be private but we need it to be public for BinaryObjectReader to work
 
-        public uint attrs => bits & 0xffff;
+        public uint attrs => (uint) bits & 0xffff; /* param attributes or field flags */
         public Il2CppTypeEnum type => (Il2CppTypeEnum)((bits >> 16) & 0xff);
-        public uint num_mods => (bits >> 24) & 0x3f;
+        public uint num_mods => (uint) (bits >> 24) & 0x3f; /* max 64 modifiers follow at the end */
         public bool byref => ((bits >> 30) & 1) == 1;
-        public bool pinned => (bits >> 31) == 1;
+        public bool pinned => (bits >> 31) == 1; /* valid when included in a local var signature */
     }
 
     public class Il2CppGenericClass
     {
-        public int typeDefinitionIndex;    /* the generic type definition */
+        public long typeDefinitionIndex;    /* the generic type definition */
         public Il2CppGenericContext context;   /* a context that contains the type instantiation doesn't contain any method instantiation */
-        public uint cached_class; /* if present, the Il2CppClass corresponding to the instantiation.  */
+        public ulong cached_class; /* if present, the Il2CppClass corresponding to the instantiation.  */
     }
 
     public class Il2CppGenericContext
     {
         /* The instantiation corresponding to the class generic parameters */
-        public uint class_inst;
+        public ulong class_inst;
         /* The instantiation corresponding to the method generic parameters */
-        public uint method_inst;
+        public ulong method_inst;
     }
 
     public class Il2CppGenericInst
     {
-        public uint type_argc;
-        public uint type_argv;
+        public ulong type_argc;
+        public ulong type_argv;
     }
 
     public class Il2CppArrayType
     {
-        public uint etype;
+        public ulong etype;
         public byte rank;
         public byte numsizes;
         public byte numlobounds;
-        public uint sizes;
-        public uint lobounds;
+        public ulong sizes;
+        public ulong lobounds;
+    }
+
+    public class Il2CppMethodSpec
+    {
+        public int methodDefinitionIndex;
+        public int classIndexIndex;
+        public int methodIndexIndex;
     }
 }

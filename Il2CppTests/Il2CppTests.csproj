@@ -1,0 +1,84 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="TestAssemblies\**" />
+    <Compile Remove="TestBinaries\**" />
+    <Compile Remove="TestExpectedResults\**" />
+    <Compile Remove="TestSources\**" />
+    <EmbeddedResource Remove="TestAssemblies\**" />
+    <EmbeddedResource Remove="TestBinaries\**" />
+    <EmbeddedResource Remove="TestExpectedResults\**" />
+    <None Remove="TestAssemblies\**" />
+    <None Remove="TestBinaries\**" />
+    <None Remove="TestExpectedResults\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestExpectedResults\ExplicitInterfaces.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-ExplicitInterfaces-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-ExplicitInterfaces-x86.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestExpectedResults\GameAssembly-Scope-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-Scope-x86.cs" />
+    <Content Include="TestExpectedResults\Scope.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestExpectedResults\GameAssembly-Properties-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-Properties-x86.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-References-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-References-x86.cs" />
+    <Content Include="TestExpectedResults\Properties.cs" />
+    <Content Include="TestExpectedResults\References.cs" />
+    <Content Include="TestExpectedResults\ArraysAndPointers.cs" />
+    <Content Include="TestExpectedResults\CustomAttributeData.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-ArraysAndPointers-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-ArraysAndPointers-x86.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-CustomAttributeData-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-CustomAttributeData-x86.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-GenericTypes-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-GenericTypes-x86.cs" />
+    <Content Include="TestExpectedResults\GenericTypes.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-Methods-x64.cs" />
+    <Content Include="TestExpectedResults\GameAssembly-Methods-x86.cs" />
+    <Content Include="TestExpectedResults\Methods.cs" />
+    <Content Include="TestSources\ExplicitInterfaces.cs" />
+    <Content Include="TestSources\Scope.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestSources\ArraysAndPointers.cs" />
+    <Content Include="TestSources\CustomAttributeData.cs" />
+    <Content Include="TestSources\GenericTypes.cs" />
+    <Content Include="TestSources\Methods.cs" />
+    <Content Include="TestSources\Properties.cs" />
+    <Content Include="TestSources\References.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="nunit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Il2CppDumper\Il2CppDumper.csproj" />
+  </ItemGroup>
+
+</Project>

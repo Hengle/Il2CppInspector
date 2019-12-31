@@ -1,24 +1,27 @@
 ﻿/*
-    Copyright 2017 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2017-2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
 
     All rights reserved.
 */
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Il2CppInspector.Reflection {
     public abstract class MemberInfo
     {
         // Assembly that this member is defined in. Only set when MemberType == TypeInfo
-        public Assembly Assembly { get; }
+        public Assembly Assembly { get; protected set; }
 
         // Custom attributes for this member
-        public IEnumerable<CustomAttributeData> CustomAttributes => throw new NotImplementedException();
+        public abstract IEnumerable<CustomAttributeData> CustomAttributes { get; }
+
+        public CustomAttributeData[] GetCustomAttributes(string fullTypeName) => CustomAttributes.Where(a => a.AttributeType.FullName == fullTypeName).ToArray();
 
         // Type that this type is declared in for nested types
-        public TypeInfo DeclaringType { get; }
+        protected int declaringTypeDefinitionIndex { private get; set; } = -1;
+        public TypeInfo DeclaringType => declaringTypeDefinitionIndex != -1? Assembly.Model.TypesByDefinitionIndex[declaringTypeDefinitionIndex] : null;
 
         // What sort of member this is, eg. method, field etc.
         public abstract MemberTypes MemberType { get; }
@@ -26,19 +29,17 @@ namespace Il2CppInspector.Reflection {
         // Name of the member
         public virtual string Name { get; protected set; }
 
-        // TODO: GetCustomAttributes etc.
+        // Name of the member with @ prepended if the name is a C# reserved keyword
+        public string CSharpSafeName => Constants.Keywords.Contains(Name) ? "@" + Name : Name;
 
         // For top-level members in an assembly (ie. non-nested types)
-        protected MemberInfo(Assembly asm, TypeInfo declaringType = null) {
-            Assembly = asm;
-            DeclaringType = declaringType;
-        }
+        protected MemberInfo(Assembly asm) => Assembly = asm;
 
         // For lower level members, eg. fields, properties etc. and nested types
-        protected MemberInfo(TypeInfo declaringType) {
+        protected MemberInfo(TypeInfo declaringType = null) {
             if (declaringType != null) {
                 Assembly = declaringType.Assembly;
-                DeclaringType = declaringType;
+                declaringTypeDefinitionIndex = declaringType.Index;
             }
         }
 

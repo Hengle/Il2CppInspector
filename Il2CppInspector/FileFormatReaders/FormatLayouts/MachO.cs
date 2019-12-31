@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2017 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2017-2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
 
     All rights reserved.
 */
@@ -21,6 +21,8 @@ namespace Il2CppInspector
         MH_EXECUTE = 0x2,
 
         LC_SEGMENT = 0x1,
+        LC_SYMTAB = 0x2,
+        LC_DYSYMTAB = 0xb,
         LC_SEGMENT_64 = 0x19,
         LC_FUNCTION_STARTS = 0x26,
 
@@ -30,7 +32,7 @@ namespace Il2CppInspector
         CPU_TYPE_ARM64 = 0x01000000 + CPU_TYPE_ARM
     }
 
-    internal class MachOHeader
+    internal class MachOHeader<TWord> where TWord : struct
     {
         public uint Magic;
         public uint CPUType;
@@ -38,8 +40,7 @@ namespace Il2CppInspector
         public uint FileType;
         public uint NumCommands;
         public uint SizeOfCommands;
-        public uint Flags;
-        // 64-bit header has an extra 32-bit Reserved field
+        public TWord Flags;
     }
 
     internal class MachOLoadCommand
@@ -48,69 +49,36 @@ namespace Il2CppInspector
         public uint Size;
     }
 
-    internal class MachOSegmentCommand
+    internal class MachOSegmentCommand<TWord> where TWord : struct
     {
         // MachOLoadCommand
         [String(FixedSize = 16)]
         public string Name;
-        public uint VirtualAddress;
-        public uint VirtualSize;
-        public uint ImageOffset;
-        public uint ImageSize;
+        public TWord VirtualAddress;
+        public TWord VirtualSize;
+        public TWord ImageOffset;
+        public TWord ImageSize;
         public uint VMMaxProt;
         public uint VMInitProt;
         public uint NumSections;
         public uint Flags;
     }
 
-    internal class MachOSegmentCommand64
-    {
-        // MachOLoadCommand
-        [String(FixedSize = 16)]
-        public string Name;
-        public ulong VirtualAddress;
-        public ulong VirtualSize;
-        public ulong ImageOffset;
-        public ulong ImageSize;
-        public uint VMMaxProt;
-        public uint VMInitProt;
-        public uint NumSections;
-        public uint Flags;
-    }
-
-    internal class MachOSection
+    internal class MachOSection<TWord> where TWord : struct
     {
         [String(FixedSize = 16)]
         public string Name;
         [String(FixedSize = 16)]
         public string SegmentName;
-        public uint Address;
-        public uint Size;
+        public TWord Address;
+        public TWord Size;
         public uint ImageOffset;
         public uint Align;
         public uint ImageRelocOffset;
-        public uint NumRelocEntries;
+        public int NumRelocEntries;
         public uint Flags;
         public uint Reserved1;
-        public uint Reserved2;
-    }
-
-    internal class MachOSection64
-    {
-        [String(FixedSize = 16)]
-        public string Name;
-        [String(FixedSize = 16)]
-        public string SegmentName;
-        public ulong Address;
-        public ulong Size;
-        public uint ImageOffset;
-        public uint Align;
-        public uint ImageRelocOffset;
-        public uint NumRelocEntries;
-        public uint Flags;
-        public uint Reserved1;
-        public uint Reserved2;
-        public uint Reserved3;
+        public TWord Reserved2;
     }
 
     internal class MachOLinkEditDataCommand
@@ -118,5 +86,34 @@ namespace Il2CppInspector
         // MachOLoadCommand
         public uint Offset;
         public uint Size;
+    }
+
+    internal class MachOSymtabCommand
+    {
+        public uint SymOffset;
+        public uint NumSyms;
+        public uint StrOffset;
+        public uint StrSize;
+    }
+
+    internal class MachO_nlist<TWord> where TWord : struct
+    {
+        public uint n_strx;
+        public byte n_type;
+        public byte n_sect;
+        public ushort n_desc;
+        public TWord n_value;
+    }
+
+    internal class MachO_relocation_info
+    {
+        public int r_address;
+        public uint r_data;
+
+        public uint r_symbolnum => r_data & 0x00ffffff;
+        public bool r_pcrel => ((r_data >> 24) & 1) == 1;
+        public uint r_length => (r_data >> 25) & 3;
+        public bool r_extern => ((r_data >> 27) & 1) == 1;
+        public uint r_type => r_data >> 28;
     }
 }

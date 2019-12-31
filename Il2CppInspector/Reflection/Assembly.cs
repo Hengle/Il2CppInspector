@@ -1,5 +1,5 @@
 /*
-    Copyright 2017 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2017-2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
 
     All rights reserved.
 */
@@ -12,14 +12,20 @@ namespace Il2CppInspector.Reflection {
     public class Assembly
     {
         // IL2CPP-specific data
-        public Il2CppReflector Model { get; }
-        public Il2CppImageDefinition Definition { get; }
+        public Il2CppModel Model { get; }
+        public Il2CppImageDefinition ImageDefinition { get; }
+        public Il2CppAssemblyDefinition AssemblyDefinition { get; }
+        public Il2CppCodeGenModule ModuleDefinition { get; }
         public int Index { get; }
 
-        // TODO: CustomAttributes
+        // Custom attributes for this assembly
+        public IEnumerable<CustomAttributeData> CustomAttributes => CustomAttributeData.GetCustomAttributes(this);
 
-        // Name of the assembly
+        // Fully qualified name of the assembly
         public string FullName { get; }
+
+        // Display name of the assembly
+        public string ShortName { get; }
 
         // Entry point method for the assembly
         public MethodInfo EntryPoint => throw new NotImplementedException();
@@ -31,19 +37,45 @@ namespace Il2CppInspector.Reflection {
         public TypeInfo GetType(string typeName) => DefinedTypes.FirstOrDefault(x => x.FullName == typeName);
 
         // Initialize from specified assembly index in package
-        public Assembly(Il2CppReflector model, int imageIndex) {
+        public Assembly(Il2CppModel model, int imageIndex) {
             Model = model;
-            Definition = Model.Package.Metadata.Images[imageIndex];
-            Index = Definition.assemblyIndex;
-            FullName = Model.Package.Strings[Definition.nameIndex];
+            ImageDefinition = Model.Package.Images[imageIndex];
+            AssemblyDefinition = Model.Package.Assemblies[ImageDefinition.assemblyIndex];
 
-            if (Definition.entryPointIndex != -1) {
+            if (AssemblyDefinition.imageIndex != imageIndex)
+                throw new InvalidOperationException("Assembly/image index mismatch");
+
+            Index = ImageDefinition.assemblyIndex;
+            ShortName = Model.Package.Strings[ImageDefinition.nameIndex];
+
+            // Get full assembly name
+            var nameDef = AssemblyDefinition.aname;
+            var name = Model.Package.Strings[nameDef.nameIndex];
+            var culture = Model.Package.Strings[nameDef.cultureIndex];
+            if (string.IsNullOrEmpty(culture))
+                culture = "neutral";
+            var pkt = BitConverter.ToString(nameDef.publicKeyToken).Replace("-", "");
+            if (pkt == "0000000000000000")
+                pkt = "null";
+            var version = string.Format($"{nameDef.major}.{nameDef.minor}.{nameDef.build}.{nameDef.revision}");
+
+            FullName = string.Format($"{name}, Version={version}, Culture={culture}, PublicKeyToken={pkt.ToLower()}");
+
+            if (ImageDefinition.entryPointIndex != -1) {
                 // TODO: Generate EntryPoint method from entryPointIndex
             }
 
+            // Find corresponding module (we'll need this for method pointers)
+            ModuleDefinition = Model.Package.Modules?[ShortName];
+
             // Generate types in DefinedTypes from typeStart to typeStart+typeCount-1
-            for (var t = Definition.typeStart; t < Definition.typeStart + Definition.typeCount; t++)
-                DefinedTypes.Add(new TypeInfo(Model.Package, t, this));
+            for (var t = ImageDefinition.typeStart; t < ImageDefinition.typeStart + ImageDefinition.typeCount; t++) {
+                var type = new TypeInfo(t, this);
+
+                // Don't add empty module definitions
+                if (type.Name != "<Module>")
+                    DefinedTypes.Add(type);
+            }
         }
 
         public override string ToString() => FullName;

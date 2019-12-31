@@ -1,6 +1,6 @@
 ﻿/*
     Copyright 2017 Perfare - https://github.com/Perfare/Il2CppDumper
-    Copyright 2017 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2017-2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
 
     All rights reserved.
 */
@@ -9,10 +9,29 @@ using NoisyCowStudios.Bin2Object;
 
 namespace Il2CppInspector
 {
+    // Unity 4.6.1p5 - first release, no global-metadata.dat
+    // Unity 5.2.0f3 -> v15
+    // Unity 5.3.0f4 -> v16
+    // Unity 5.3.1f1 -> v16
+    // Unity 5.3.2f1 -> v19
+    // Unity 5.3.3f1 -> v20
+    // Unity 5.3.4f1 -> v20
+    // Unity 5.3.5f1 -> v21
+    // Unity 5.4.0f3 -> v21
+    // Unity 5.5.0f3 -> v22
+    // Unity 5.6.2p3 -> v23
+    // Unity 5.6.4f1 -> v23
+    // Unity 2017.2f3 -> v24
+    // Unity 2018.2.0f2 -> v24
+    // Unity 2018.3.0f2 -> v24.1
+    // Unity 2019.2.8f1 -> v24.2
+    // https://unity3d.com/get-unity/download/archive
+    // Metadata version is written at the end of Unity.IL2CPP.MetadataCacheWriter.WriteLibIl2CppMetadata or WriteMetadata (Unity.IL2CPP.dll)
+
+    // From il2cpp-metadata.h
 #pragma warning disable CS0649
     public class Il2CppGlobalMetadataHeader
     {
-        // Metadata v21
         public uint sanity;
         public int version;
         public int stringLiteralOffset; // string data for managed code
@@ -27,14 +46,22 @@ namespace Il2CppInspector
         public int propertiesCount;
         public int methodsOffset; // Il2CppMethodDefinition
         public int methodsCount;
+
+        [Version(Min = 16)]
         public int parameterDefaultValuesOffset; // Il2CppParameterDefaultValue
+        [Version(Min = 16)]
         public int parameterDefaultValuesCount;
+
         public int fieldDefaultValuesOffset; // Il2CppFieldDefaultValue
         public int fieldDefaultValuesCount;
         public int fieldAndParameterDefaultValueDataOffset; // uint8_t
         public int fieldAndParameterDefaultValueDataCount;
+
+        [Version(Min = 16)]
         public int fieldMarshaledSizesOffset; // Il2CppFieldMarshaledSize
+        [Version(Min = 16)]
         public int fieldMarshaledSizesCount;
+
         public int parametersOffset; // Il2CppParameterDefinition
         public int parametersCount;
         public int fieldsOffset; // Il2CppFieldDefinition
@@ -55,23 +82,45 @@ namespace Il2CppInspector
         public int interfaceOffsetsCount;
         public int typeDefinitionsOffset; // Il2CppTypeDefinition
         public int typeDefinitionsCount;
+
+        [Version(Max = 24.1)]
         public int rgctxEntriesOffset; // Il2CppRGCTXDefinition
+        [Version(Max = 24.1)]
         public int rgctxEntriesCount;
+
+        [Version(Min = 16)]
         public int imagesOffset; // Il2CppImageDefinition
+        [Version(Min = 16)]
         public int imagesCount;
+        [Version(Min = 16)]
         public int assembliesOffset; // Il2CppAssemblyDefinition
+        [Version(Min = 16)]
         public int assembliesCount;
+
+        [Version(Min = 19)]
         public int metadataUsageListsOffset; // Il2CppMetadataUsageList
+        [Version(Min = 19)]
         public int metadataUsageListsCount;
+        [Version(Min = 19)]
         public int metadataUsagePairsOffset; // Il2CppMetadataUsagePair
+        [Version(Min = 19)]
         public int metadataUsagePairsCount;
+        [Version(Min = 19)]
         public int fieldRefsOffset; // Il2CppFieldRef
+        [Version(Min = 19)]
         public int fieldRefsCount;
+        [Version(Min = 19)]
         public int referencedAssembliesOffset; // int
+        [Version(Min = 19)]
         public int referencedAssembliesCount;
+
+        [Version(Min = 21)]
         public int attributesInfoOffset; // Il2CppCustomAttributeTypeRange
+        [Version(Min = 21)]
         public int attributesInfoCount;
+        [Version(Min = 21)]
         public int attributeTypesOffset; // TypeIndex
+        [Version(Min = 21)]
         public int attributeTypesCount;
 
         // Added in metadata v22
@@ -111,15 +160,75 @@ namespace Il2CppInspector
         public uint exportedTypeCount;
 
         public int entryPointIndex;
+
+        [Version(Min = 19)]
         public uint token;
+
+        [Version(Min = 24.1)]
+        public int customAttributeStart;
+        [Version(Min = 24.1)]
+        public uint customAttributeCount;
     }
 #pragma warning restore CS0649
+
+    // Renamed from Il2CppAssembly somewhere after Unity 2017.2f3 up to Unity 2018.2.0f2
+    public class Il2CppAssemblyDefinition
+    {
+        // They moved the position of aname in v16 from the top to the bottom of the struct
+        public Il2CppAssemblyNameDefinition aname => aname_pre16 ?? aname_post16;
+
+        [Version(Max = 15)]
+        public Il2CppAssemblyNameDefinition aname_pre16;
+
+        public int imageIndex;
+
+        [Version(Min = 24.1)]
+        public uint token;
+
+        [Version(Max = 24.0)]
+        public int customAttributeIndex;
+
+        [Version(Min = 20)]
+        public int referencedAssemblyStart;
+        [Version(Min = 20)]
+        public int referencedAssemblyCount;
+
+        [Version(Min = 16)]
+        public Il2CppAssemblyNameDefinition aname_post16;
+    }
+
+    // Renamed from Il2CppAssemblyName somewhere after Unity 2017.2f3 up to Unity 2018.2.0f2
+    public class Il2CppAssemblyNameDefinition
+    {
+        // They moved the position of publicKeyToken in v16 from the middle to the bottom of the struct
+        public byte[] publicKeyToken => publicKeyToken_post16;
+
+        public int nameIndex;
+        public int cultureIndex;
+        public int hashValueIndex;
+        public int publicKeyIndex;
+        [Version(Max = 15), ArrayLength(FixedSize = 8)]
+        public byte[] publicKeyToken_pre16;
+        public uint hash_alg;
+        public int hash_len;
+        public uint flags;
+        public int major;
+        public int minor;
+        public int build;
+        public int revision;
+        [Version(Min = 16), ArrayLength(FixedSize = 8)]
+        public byte[] publicKeyToken_post16;
+    }
 
     public class Il2CppTypeDefinition
     {
         public int nameIndex;
         public int namespaceIndex;
+
+        // Removed in metadata v24.1
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
         public int byvalTypeIndex;
         public int byrefTypeIndex;
 
@@ -127,7 +236,9 @@ namespace Il2CppInspector
         public int parentIndex;
         public int elementTypeIndex; // we can probably remove this one. Only used for enums
 
+        [Version(Max = 24.1)]
         public int rgctxStartIndex;
+        [Version(Max = 24.1)]
         public int rgctxCount;
 
         public int genericContainerIndex;
@@ -137,9 +248,9 @@ namespace Il2CppInspector
         public int delegateWrapperFromManagedToNativeIndex; // (was renamed to reversePInvokeWrapperIndex in v22)
         [Version(Max = 22)]
         public int marshalingFunctionsIndex;
-        [Version(Max = 22)]
+        [Version(Min = 21, Max = 22)]
         public int ccwFunctionIndex;
-        [Version(Max = 22)]
+        [Version(Min = 21, Max = 22)]
         public int guidIndex;
 
         public uint flags;
@@ -171,22 +282,37 @@ namespace Il2CppInspector
         // 06 - is_import; (from v22: is_import_or_windows_runtime)
         // 07-10 - One of nine possible PackingSize values (0, 1, 2, 4, 8, 16, 32, 64, or 128)
         public uint bitfield;
+
+        [Version(Min = 19)]
         public uint token;
     }
 
     public class Il2CppMethodDefinition
     {
         public int nameIndex;
+
+        [Version(Min = 16)]
         public int declaringType;
+
         public int returnType;
         public int parameterStart;
+
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
         public int genericContainerIndex;
+
+        [Version(Max = 24.1)]
         public int methodIndex;
+        [Version(Max = 24.1)]
         public int invokerIndex;
-        public int delegateWrapperIndex; // (was renamed to reversePInvokeWrapperIndex in v22)
+        [Version(Max = 24.1)]
+        public int reversePInvokeWrapperIndex; // (was renamed from delegateWrapperIndex in v22)
+        [Version(Max = 24.1)]
         public int rgctxStartIndex;
+        [Version(Max = 24.1)]
         public int rgctxCount;
+
         public uint token;
         public ushort flags;
         public ushort iflags;
@@ -198,15 +324,29 @@ namespace Il2CppInspector
     {
         public int nameIndex;
         public uint token;
+
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
         public int typeIndex;
+    }
+
+    public class Il2CppParameterDefaultValue
+    {
+        public int parameterIndex;
+        public int typeIndex;
+        public int dataIndex;
     }
 
     public class Il2CppFieldDefinition
     {
         public int nameIndex;
         public int typeIndex;
+
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
+        [Version(Min = 19)]
         public uint token;
     }
 
@@ -223,7 +363,11 @@ namespace Il2CppInspector
         public int get;
         public int set;
         public uint attrs;
+
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
+        [Version(Min = 19)]
         public uint token;
     }
 
@@ -234,7 +378,47 @@ namespace Il2CppInspector
         public int add;
         public int remove;
         public int raise;
+
+        [Version(Max = 24.0)]
         public int customAttributeIndex;
+
+        [Version(Min = 19)]
         public uint token;
+    }
+
+    public class Il2CppGenericContainer
+    {
+        /* index of the generic type definition or the generic method definition corresponding to this container */
+        public int ownerIndex; // either index into Il2CppClass metadata array or Il2CppMethodDefinition array
+        public int type_argc;
+        /* If true, we're a generic method, otherwise a generic type definition. */
+        public int is_method;
+        /* Our type parameters. */
+        public uint genericParameterStart; // GenericParameterIndex
+    }
+
+    public class Il2CppGenericParameter
+    {
+        public int ownerIndex;  /* Type or method this parameter was defined in. */ // GenericContainerIndex
+        public int nameIndex; // StringIndex
+        public short constraintsStart; // GenericParameterConstraintIndex
+        public short constraintsCount;
+        public ushort num; // Generic parameter position
+        public ushort flags; // GenericParameterAttributes
+    }
+
+    public class Il2CppCustomAttributeTypeRange
+    {
+        [Version(Min = 24.1)]
+        public uint token;
+
+        public int start;
+        public int count;
+    }
+
+    public class Il2CppInterfaceOffsetPair
+    {
+        public int interfaceTypeIndex;
+        public int offset;
     }
 }
