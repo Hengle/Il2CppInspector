@@ -1,5 +1,5 @@
 ﻿/*
-    Copyright 2019 Katy Coe - http://www.hearthcode.org - http://www.djkaty.com
+    Copyright 2019 Katy Coe - http://www.djkaty.com - https://github.com/djkaty
 
     All rights reserved.
 */
@@ -19,11 +19,11 @@ namespace Il2CppInspector
 
             // Arrange
             // We're currently in IlCppTests\bin\Debug\netcoreapp3.0 or similar
-            var testPath = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\..\..\..\TestBinaries\References");
+            var testPath = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\..\..\..\TestBinaries\References-ARMv7");
 
             // Build model
-            var inspectors = Il2CppInspector.LoadFromFile(testPath + @"\References.so", testPath + @"\global-metadata.dat");
-            var model = new Il2CppModel(inspectors[0]);
+            var inspectors = Il2CppInspector.LoadFromFile(testPath + @"\References-ARMv7.so", testPath + @"\global-metadata.dat");
+            var model = new TypeModel(inspectors[0]);
 
             var asm = model.GetAssembly("References.dll");
 
@@ -45,8 +45,7 @@ namespace Il2CppInspector
                 (p2[2], "Int32&")
             };
 
-            // TODO: Add [T] before parameters after fixing TODO in MethodInfo.cs:33
-            Assert.That(m1.ToString() == "Test& MethodWithGenericAndClassRefs" /* [T] */ + "(T ByRef, Int32 ByRef, Test ByRef)");
+            Assert.That(m1.ToString() == "Test& MethodWithGenericAndClassRefs[T](T ByRef, Int32 ByRef, Test ByRef)");
             Assert.That(m2.ToString() == "Void MethodWithInRefOut(Int32 ByRef, Int32 ByRef, Int32 ByRef)");
 
             foreach (var check in checks) {
